@@ -1,0 +1,30 @@
+dependencies: []
+galaxy_info:
+  author: Julian Easterling
+  description: Ansible role to install acme.sh to issue and renew Let's Encrypt SSL certificates
+  galaxy_tags:
+    - acme
+    - letsencrypt
+    - ssl
+    - dcjulian29
+  license: Apache-2.0
+  min_ansible_version: 2.13.7
+  namespace: dcjulian29
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+        - buster
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+    - name: Fedora
+      versions:
+        - "36"
+        - "35"
+    - name: EL
+      versions:
+        - "9"
+        - "8"
+  role_name: acme_sh
