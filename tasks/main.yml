@@ -72,7 +72,7 @@
     {{ "--post-hook " + '"' + item.post_hook + '"' if item.post_hook else "" }}
     {{ "--renew-hook " + '"' + item.renew_hook + '"' if item.renew_hook else "" }}
     {{ item.extra_issue if item.extra_issue is defined else "" }}
-  environment: "{{ item.dns_provider_api_keys | default(acme_sh_dns_provider_api_keys) }}"
+  environment: "{{ item.dns_api_keys | default(acme_sh_dns_api_keys) }}"
   loop: "{{ acme_sh_certificates }}"
   when:
     - acme_sh_certificates and item.domains is defined and item.domains
