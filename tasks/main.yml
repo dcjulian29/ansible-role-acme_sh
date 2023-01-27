@@ -62,15 +62,15 @@
     --issue -d {{ item.domains | join(" -d ") }}
     {{ "--server " + item.server | default(acme_sh_server) if item.server | default(acme_sh_server) else "" }}
     {{ "--dns " + '"' + item.dns | default(acme_sh_dns) + '"' if item.dns | default(acme_sh_dns) else "" }}
-    {{ "--dnssleep " + item.dns_sleep | default(acme_sh_sleep) if item.dns_provider | default(acme_sh_sleep) else "" }}
+    {{ "--dnssleep " + (item.dns_sleep | default(acme_sh_sleep) | string) if item.dns | default(acme_sh_dns) else "" }}
     --days {{ acme_sh_renew_days }}
     {{ "--standalone" if not item.webroot | default(acme_sh_standalone) else "" }}
     {{ "--webroot " + acme_sh_webroot if item.webroot | default(false) else "" }}
     {{ "--force" if item.force | default(false) else "" }}
     {{ "--debug" if item.debug | default(acme_sh_debug) else "" }}
-    {{ "--pre-hook " + '"' + item.pre_hook + '"' if item.pre_hook else "" }}
-    {{ "--post-hook " + '"' + item.post_hook + '"' if item.post_hook else "" }}
-    {{ "--renew-hook " + '"' + item.renew_hook + '"' if item.renew_hook else "" }}
+    {{ "--pre-hook " + '"' + item.pre_hook + '"' if item.pre_hook is defined else "" }}
+    {{ "--post-hook " + '"' + item.post_hook + '"' if item.post_hook is defined else "" }}
+    {{ "--renew-hook " + '"' + item.renew_hook + '"' if item.renew_hook is defined else "" }}
     {{ item.extra_issue if item.extra_issue is defined else "" }}
   environment: "{{ item.dns_api_keys | default(acme_sh_dns_api_keys) }}"
   loop: "{{ acme_sh_certificates }}"
