@@ -6,7 +6,7 @@ This an Ansible role to ...
 
 ## Requirements
 
-- Internet Connection to download container images.
+- Internet Connection to download acme.sh script.
 
 ## Installation
 
