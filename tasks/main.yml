@@ -1,2 +1,100 @@
 ---
-# tasks file for ansible-role-acme_sh
+- name: Install socat if needed
+  ansible.builtin.package:
+    name: socat
+    state: present
+  loop: "{{ acme_sh_certificates }}"
+  when:
+    - acme_sh_standalone
+    - acme_sh_certificates and not item.webroot | default(false)
+
+- name: Ensure the acme.sh directory exists
+  ansible.builtin.file:
+    group: "{{ acme_sh_become_user }}"
+    mode: "0755"
+    owner: "{{ acme_sh_become_user }}"
+    path: "{{ acme_sh_data_dir }}"
+    state: directory
+
+- name: Ensure LE_WORKING_DIR environment variable is correct
+  ansible.builtin.lineinfile:
+    dest: "/etc/environment"
+    state: present
+    regexp: "^LE_WORKING_DIR="
+    line: "LE_WORKING_DIR={{ acme_sh_data_dir }}"
+
+- name: Download acme.sh script if needed.
+  ansible.builtin.get_url:
+    dest: /tmp/acme.sh
+    mode: "0755"
+    url: https://raw.githubusercontent.com/acmesh-official/acme.sh/master/acme.sh
+
+- name: Install acme.sh if needed
+  ansible.builtin.command:
+    argv:
+      - ./acme.sh
+      - --install
+      - --home
+      - "{{ acme_sh_data_dir }}"
+      - "{{ '--email' if acme_sh_account_email else '' }}"
+      - "{{ acme_sh_account_email if acme_sh_account_email else '' }}"
+    creates: "{{ acme_sh_data_dir }}/acme.sh"
+    chdir: /tmp
+  become_user: "{{ acme_sh_become_user }}"
+
+- name: Enable acme.sh auto-upgrade if needed
+  ansible.builtin.lineinfile:
+    path: "{{ acme_sh_data_dir }}/account.conf"
+    regexp: "AUTO_UPGRADE="
+    line: "AUTO_UPGRADE='1'"
+  when: acme_sh_autoupgrade
+
+- name: Disable acme.sh auto-upgrade if needed
+  ansible.builtin.lineinfile:
+    path: "{{ acme_sh_dir }}/account.conf"
+    regexp: "AUTO_UPGRADE="
+    line: "AUTO_UPGRADE='0'"
+  when: not acme_sh_autoupgrade
+
+- name: Issue certificate(s).
+  ansible.builtin.command: >-
+    {{ acme_sh_data_dir }}/acme.sh
+    --issue -d {{ item.domains | join(" -d ") }}
+    {{ "--server " + item.server | default(acme_sh_server) if item.server | default(acme_sh_server) else "" }}
+    {{ "--dns " + '"' + item.dns | default(acme_sh_dns) + '"' if item.dns | default(acme_sh_dns) else "" }}
+    {{ "--dnssleep " + item.dns_sleep | default(acme_sh_sleep) if item.dns_provider | default(acme_sh_sleep) else "" }}
+    --days {{ acme_sh_renew_days }}
+    {{ "--standalone" if not item.webroot | default(acme_sh_standalone) else "" }}
+    {{ "--webroot " + acme_sh_webroot if item.webroot | default(false) else "" }}
+    {{ "--force" if item.force | default(false) else "" }}
+    {{ "--debug" if item.debug | default(acme_sh_debug) else "" }}
+    {{ "--pre-hook " + '"' + item.pre_hook + '"' if item.pre_hook else "" }}
+    {{ "--post-hook " + '"' + item.post_hook + '"' if item.post_hook else "" }}
+    {{ "--renew-hook " + '"' + item.renew_hook + '"' if item.renew_hook else "" }}
+    {{ item.extra_issue if item.extra_issue is defined else "" }}
+  environment: "{{ item.dns_provider_api_keys | default(acme_sh_dns_provider_api_keys) }}"
+  loop: "{{ acme_sh_certificates }}"
+  when:
+    - acme_sh_certificates and item.domains is defined and item.domains
+  become_user: "{{ acme_sh_become_user }}"
+  register: issue_result
+  changed_when: issue_result.rc == 0 and "Cert success" in issue_result.stdout
+  failed_when: issue_result.rc != 0 and "Domains not changed" not in issue_result.stdout
+
+- name: Install certificate(s).
+  ansible.builtin.command: >-
+    {{ acme_sh_data_dir }}/acme.sh
+    --install-cert -d {{ item.domains | first }}
+    --key-file {{ item.install_key_to }}
+    --fullchain-file {{ item.install_cert_to }}
+    {{ "--reloadcmd " + '"' + item.reload_cmd + '"' if item.reload_cmd is defined else "" }}
+    {{ "--debug" if item.debug | default(acme_sh_debug) else "" }}
+    {{ item.extra_install if item.extra_install is defined else "" }}
+  loop: "{{ acme_sh_certificates }}"
+  when:
+    - acme_sh_certificates and item.domains is defined and item.domains
+    - item.install_cert_to is defined
+    - item.install_key_to is defined
+  become_user: "{{ acme_sh_become_user }}"
+  register: install_result
+  failed_when: install_result.rc != 0 and "Reload error for" not in install_result.stderr

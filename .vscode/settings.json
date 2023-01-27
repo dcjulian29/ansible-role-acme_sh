@@ -1,6 +1,12 @@
 {
   "cSpell.words": [
+    "chdir",
+    "contoso",
     "dcjulian",
+    "dnssleep",
+    "lineinfile",
+    "reloadcmd",
+    "socat",
     "unmark"
   ]
 }
