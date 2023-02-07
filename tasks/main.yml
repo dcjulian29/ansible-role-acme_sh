@@ -64,7 +64,7 @@
     {{ "--dns " + '"' + item.dns | default(acme_sh_dns) + '"' if item.dns | default(acme_sh_dns) else "" }}
     {{ "--dnssleep " + (item.dns_sleep | default(acme_sh_sleep) | string) if item.dns | default(acme_sh_dns) else "" }}
     --days {{ acme_sh_renew_days }}
-    {{ "--standalone" if not item.webroot | default(acme_sh_standalone) else "" }}
+    {{ "--standalone" if item.webroot is not defined and acme_sh_standalone else "" }}
     {{ "--webroot " + acme_sh_webroot if item.webroot | default(false) else "" }}
     {{ "--force" if item.force | default(false) else "" }}
     {{ "--debug" if item.debug | default(acme_sh_debug) else "" }}
