@@ -16,6 +16,14 @@
     path: "{{ acme_sh_data_dir }}"
     state: directory
 
+- name: Ensure the default Let's Encrypt directory exists
+  ansible.builtin.file:
+    path: /etc/letsencrypt
+    state: directory
+    owner: root
+    group: root
+    mode: "0770"
+
 - name: Ensure LE_WORKING_DIR environment variable is correct
   ansible.builtin.lineinfile:
     dest: "/etc/environment"
