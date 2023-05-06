@@ -37,7 +37,7 @@
     mode: "0755"
     url: https://raw.githubusercontent.com/acmesh-official/acme.sh/master/acme.sh
   when:
-    - not ansible_check_mode # (Bug ansible/ansible#65687)
+    - not ansible_check_mode    # (Bug ansible/ansible#65687)
 
 - name: Install acme.sh if needed
   ansible.builtin.command:
@@ -108,3 +108,4 @@
   become_user: "{{ acme_sh_become_user }}"
   register: install_result
   failed_when: install_result.rc != 0 and "Reload error for" not in install_result.stderr
+  changed_when: install_result.rc == 0 and "Installing full chain" in install_result.stdout
