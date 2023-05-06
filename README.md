@@ -1,8 +1,8 @@
 # Ansible Role: acme_sh
 
-[![CI](https://github.com/dcjulian29/ansible-role-acme_sh/actions/workflows/ci.yml/badge.svg)](https://github.com/dcjulian29/ansible-role-acme_sh/actions/workflows/ci.yml) [![GitHub Issues](https://img.shields.io/github/issues-raw/dcjulian29/ansible-role-acme_sh.svg)](https://github.com/dcjulian29/ansible-role-acme_sh/issues)
+[![Lint](https://github.com/dcjulian29/ansible-role-acme_sh/actions/workflows/lint.yml/badge.svg)](https://github.com/dcjulian29/ansible-role-acme_sh/actions/workflows/lint.yml) [![GitHub Issues](https://img.shields.io/github/issues-raw/dcjulian29/ansible-role-acme_sh.svg)](https://github.com/dcjulian29/ansible-role-acme_sh/issues)
 
-This an Ansible role to ...
+This an Ansible role to install acme.sh to issue and renew Let's Encrypt SSL certificates
 
 ## Requirements
 
@@ -28,12 +28,4 @@ ansible-galaxy install -r requirements.yml
 
 ## Dependencies
 
-None
-
-## Role Variables
-
-TODO
-
-## Example Playbook
-
-The examples directory include one or more example playbooks.
+- None
