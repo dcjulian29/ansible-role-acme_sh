@@ -46,8 +46,8 @@
       - --install
       - --home
       - "{{ acme_sh_data_dir }}"
-      - "{{ '--email' if acme_sh_account_email else '' }}"
-      - "{{ acme_sh_account_email if acme_sh_account_email else '' }}"
+      - --email
+      - "{{ acme_sh_account_email }}"
     creates: "{{ acme_sh_data_dir }}/acme.sh"
     chdir: /tmp
   become_user: "{{ acme_sh_become_user }}"
