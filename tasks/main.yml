@@ -30,6 +30,7 @@
       - "{{ acme_sh_account_email }}"
     creates: "~/acme.sh"
     chdir: /tmp
+  become: true
   become_user: "{{ acme_sh_become_user }}"
   when:
     - not ansible_check_mode
@@ -39,6 +40,7 @@
     path: ~/.acme.sh/account.conf
     regexp: '^#LOG_FILE=(.*)$'
     replace: 'LOG_FILE=\1'
+  become: true
   become_user: "{{ acme_sh_become_user }}"
   when: acme_sh_log
 
@@ -47,6 +49,7 @@
     path: ~/.acme.sh/account.conf
     regexp: "AUTO_UPGRADE="
     line: "AUTO_UPGRADE='1'"
+  become: true
   become_user: "{{ acme_sh_become_user }}"
   when: acme_sh_autoupgrade
 
@@ -55,6 +58,7 @@
     path: "~/.acme.sh/account.conf"
     regexp: "AUTO_UPGRADE="
     line: "AUTO_UPGRADE='0'"
+  become: true
   become_user: "{{ acme_sh_become_user }}"
   when: not acme_sh_autoupgrade
 
@@ -78,6 +82,7 @@
   loop: "{{ acme_sh_certificates }}"
   when:
     - acme_sh_certificates and item.domains is defined and item.domains
+  become: true
   become_user: "{{ acme_sh_become_user }}"
   register: issue_result
   changed_when: issue_result.rc == 0 and "Cert success" in issue_result.stdout
@@ -97,6 +102,7 @@
     - acme_sh_certificates and item.domains is defined and item.domains
     - item.install_cert_to is defined
     - item.install_key_to is defined
+  become: true
   become_user: "{{ acme_sh_become_user }}"
   register: install_result
   failed_when: install_result.rc != 0 and "Reload error for" not in install_result.stderr
