@@ -1,4 +1,9 @@
 ---
+- name: Ensure cron is available
+  ansible.builtin.package:
+    name: cron
+    state: present
+
 - name: Install socat if needed
   ansible.builtin.package:
     name: socat
