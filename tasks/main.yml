@@ -8,29 +8,6 @@
     - acme_sh_standalone
     - acme_sh_certificates and not item.webroot | default(false)
 
-- name: Ensure the acme.sh directory exists
-  ansible.builtin.file:
-    group: "{{ acme_sh_become_user }}"
-    mode: "0755"
-    owner: "{{ acme_sh_become_user }}"
-    path: "{{ acme_sh_data_dir }}"
-    state: directory
-
-- name: Ensure the default Let's Encrypt directory exists
-  ansible.builtin.file:
-    path: /etc/letsencrypt
-    state: directory
-    owner: root
-    group: root
-    mode: "0770"
-
-- name: Ensure LE_WORKING_DIR environment variable is correct
-  ansible.builtin.lineinfile:
-    dest: "/etc/environment"
-    state: present
-    regexp: "^LE_WORKING_DIR="
-    line: "LE_WORKING_DIR={{ acme_sh_data_dir }}"
-
 - name: Download acme.sh script if needed.
   ansible.builtin.get_url:
     dest: /tmp/acme.sh
@@ -44,39 +21,49 @@
     argv:
       - ./acme.sh
       - --install
-      - --home
-      - "{{ acme_sh_data_dir }}"
       - --email
       - "{{ acme_sh_account_email }}"
-    creates: "{{ acme_sh_data_dir }}/acme.sh"
+    creates: "~/acme.sh"
     chdir: /tmp
   become_user: "{{ acme_sh_become_user }}"
+  when:
+    - not ansible_check_mode
+
+- name: Enable acme.sh logging
+  ansible.builtin.replace:
+    path: ~/.acme.sh/account.conf
+    regexp: '^#LOG_FILE=(.*)$'
+    replace: 'LOG_FILE=\1'
+  become_user: "{{ acme_sh_become_user }}"
+  when: acme_sh_log
 
 - name: Enable acme.sh auto-upgrade if needed
   ansible.builtin.lineinfile:
-    path: "{{ acme_sh_data_dir }}/account.conf"
+    path: ~/.acme.sh/account.conf
     regexp: "AUTO_UPGRADE="
     line: "AUTO_UPGRADE='1'"
+  become_user: "{{ acme_sh_become_user }}"
   when: acme_sh_autoupgrade
 
 - name: Disable acme.sh auto-upgrade if needed
   ansible.builtin.lineinfile:
-    path: "{{ acme_sh_dir }}/account.conf"
+    path: "~/.acme.sh/account.conf"
     regexp: "AUTO_UPGRADE="
     line: "AUTO_UPGRADE='0'"
+  become_user: "{{ acme_sh_become_user }}"
   when: not acme_sh_autoupgrade
 
-- name: Issue certificate(s).
+- name: Issue certificates
   ansible.builtin.command: >-
-    {{ acme_sh_data_dir }}/acme.sh
+    ~/.acme.sh/acme.sh
     --issue -d {{ item.domains | join(" -d ") }}
+    --days {{ acme_sh_renew_days }}
     {{ "--server " + item.server | default(acme_sh_server) if item.server | default(acme_sh_server) else "" }}
     {{ "--dns " + '"' + item.dns | default(acme_sh_dns) + '"' if item.dns | default(acme_sh_dns) else "" }}
     {{ "--dnssleep " + (item.dns_sleep | default(acme_sh_sleep) | string) if item.dns | default(acme_sh_dns) else "" }}
-    --days {{ acme_sh_renew_days }}
-    {{ "--standalone" if item.webroot is not defined and acme_sh_standalone else "" }}
-    {{ "--webroot " + acme_sh_webroot if item.webroot | default(false) else "" }}
-    {{ "--force" if item.force | default(false) else "" }}
+    {{ "--standalone" if acme_sh_standalone else "" }}
+    {{ "--webroot " + acme_sh_webroot | to_json if item.webroot | default(false) else "" }}
+    {{ "--force" if item.force | default(false) | to_json else "" }}
     {{ "--debug" if item.debug | default(acme_sh_debug) else "" }}
     {{ "--pre-hook " + '"' + item.pre_hook + '"' if item.pre_hook is defined else "" }}
     {{ "--post-hook " + '"' + item.post_hook + '"' if item.post_hook is defined else "" }}
@@ -91,9 +78,9 @@
   changed_when: issue_result.rc == 0 and "Cert success" in issue_result.stdout
   failed_when: issue_result.rc != 0 and "Domains not changed" not in issue_result.stdout
 
-- name: Install certificate(s).
+- name: Install certificates
   ansible.builtin.command: >-
-    {{ acme_sh_data_dir }}/acme.sh
+    ~/.acme.sh/acme.sh
     --install-cert -d {{ item.domains | first }}
     --key-file {{ item.install_key_to }}
     --fullchain-file {{ item.install_cert_to }}
