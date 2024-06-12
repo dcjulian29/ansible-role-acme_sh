@@ -6,7 +6,7 @@ This an Ansible role to install acme.sh to issue and renew Let's Encrypt SSL cer
 
 ## Requirements
 
-- Internet Connection to download acme.sh script.
+- Active Internet Connection.
 
 ## Installation
 
