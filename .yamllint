@@ -5,7 +5,12 @@ rules:
   braces:
     min-spaces-inside: 1
     max-spaces-inside: 1
+    min-spaces-from-content: 4
+    comments-indentation: false
+    braces.min-spaces-inside: 1
+    octal-values.forbid-implicit-octal: true
+    octal-values.forbid-explicit-octal: true
   indentation:
-    indent-sequences: whatever
+    indent-sequences: true
   line-length:
     max: 125
