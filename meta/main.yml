@@ -9,23 +9,10 @@ galaxy_info:
     - ssl
     - dcjulian29
   license: Apache-2.0
-  min_ansible_version: 2.13.7
+  min_ansible_version: "2.16.7"
   namespace: dcjulian29
   platforms:
     - name: Debian
       versions:
-        - bullseye
-        - buster
-    - name: Ubuntu
-      versions:
-        - jammy
-        - focal
-    - name: Fedora
-      versions:
-        - "36"
-        - "35"
-    - name: EL
-      versions:
-        - "9"
-        - "8"
+        - bookworm
   role_name: acme_sh
