@@ -28,4 +28,4 @@ acme_sh_sleep: 120
 acme_sh_standalone: true
 acme_sh_renew_days: 30
 acme_sh_server: letsencrypt
-acme_sh_webroot: ""     # /var/www/letsencrypt
+acme_sh_webroot: /var/www/letsencrypt
