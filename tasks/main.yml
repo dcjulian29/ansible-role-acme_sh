@@ -70,8 +70,8 @@
     {{ "--server " + item.server | default(acme_sh_server) if item.server | default(acme_sh_server) else "" }}
     {{ "--dns " + '"' + item.dns | default(acme_sh_dns) + '"' if item.dns | default(acme_sh_dns) else "" }}
     {{ "--dnssleep " + (item.dns_sleep | default(acme_sh_sleep) | string) if item.dns | default(acme_sh_dns) else "" }}
-    {{ "--standalone" if acme_sh_standalone and (acme_sh_certificates and not item.webroot) else "" }}
-    {{ "--webroot " + acme_sh_webroot | to_json if item.webroot | default(false) else "" }}
+    {{ "--standalone" if acme_sh_standalone and (acme_sh_certificates and not item.webroot is defined) else "" }}
+    {{ "--webroot " + (acme_sh_webroot | to_json) if item.webroot | default(false) else "" }}
     {{ "--force" if item.force | default(false) | to_json else "" }}
     {{ "--debug" if item.debug | default(acme_sh_debug) else "" }}
     {{ "--pre-hook " + '"' + item.pre_hook + '"' if item.pre_hook is defined else "" }}
