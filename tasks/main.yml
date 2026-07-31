@@ -92,7 +92,7 @@
   environment: "{{ item.dns_api_keys | default(acme_sh_dns_api_keys) }}"
   loop: "{{ acme_sh_certificates }}"
   when:
-    - acme_sh_certificates and item.domains is defined and item.domains | bool
+    - acme_sh_certificates and item.domains is defined and item.domains | length > 0
   become: true
   become_user: "{{ acme_sh_become_user }}"
   register: issue_result
@@ -110,7 +110,7 @@
     {{ item.extra_install if item.extra_install is defined else "" }}
   loop: "{{ acme_sh_certificates }}"
   when:
-    - acme_sh_certificates and item.domains is defined and item.domains | bool
+    - acme_sh_certificates and item.domains is defined and item.domains | length > 0
     - item.install_cert_to is defined
     - item.install_key_to is defined
   become: true
