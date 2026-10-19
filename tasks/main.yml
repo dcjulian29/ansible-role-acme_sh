@@ -99,6 +99,15 @@
   changed_when: issue_result.rc == 0 and "Cert success" in issue_result.stdout
   failed_when: issue_result.rc != 0 and "Domains not changed" not in issue_result.stdout
 
+- name: Check for installed certificates
+  ansible.builtin.stat:
+    path: "{{ item.install_cert_to }}"
+  loop: "{{ acme_sh_certificates }}"
+  loop_control:
+    label: "{{ item.install_cert_to | default(item.domains | first) }}"
+  when: item.install_cert_to is defined
+  register: installed_certs
+
 - name: Install certificates
   ansible.builtin.command: >-
     ~/.acme.sh/acme.sh
@@ -109,10 +118,17 @@
     {{ "--debug" if item.debug | default(acme_sh_debug) else "" }}
     {{ item.extra_install if item.extra_install is defined else "" }}
   loop: "{{ acme_sh_certificates }}"
+  loop_control:
+    index_var: idx
+  # Only after a fresh issue or when the files are missing: acme.sh prints
+  # "Installing full chain" every time, and its own cron reinstalls renewed
+  # certificates using the paths and reload command saved by the first install.
   when:
     - acme_sh_certificates and item.domains is defined and item.domains | length > 0
     - item.install_cert_to is defined
     - item.install_key_to is defined
+    - issue_result.results[idx] is changed or
+      not (installed_certs.results[idx].stat.exists | default(false))
   become: true
   become_user: "{{ acme_sh_become_user }}"
   register: install_result
